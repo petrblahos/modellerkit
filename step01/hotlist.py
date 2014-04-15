@@ -53,10 +53,12 @@ class HotList(HotBase):
         return self.data[key]
 
     def __delitem__(self, key):
-        del self.data[key]
         if type(key) is slice:
+            del self.data[key]
             self._fire("reset", key)
         else:
+            key = self._natural_index(key)
+            del self.data[key]
             self._fire("delete", key)
 
     def __setitem__(self, key, value):
@@ -67,11 +69,11 @@ class HotList(HotBase):
             self._fire("reset", key)
         else:
             self.data[key] = self._validate_value(value)
-            self._fire("update", key)
+            self._fire("update", self._natural_index(key))
 
     def insert(self, key, value):
         self.data.insert(key, self._validate_value(value))
-        self._fire("insert", key)
+        self._fire("insert", self._natural_index(key))
 
     def append(self, value):
         self.data.append(self._validate_value(value))
@@ -91,12 +93,17 @@ class HotList(HotBase):
         raise TypeError(
             "Only number/strings and tuples/frozensets allowed here.",
         )
+    def _natural_index(self, index):
+        """
+            If we get a negative index, we must convert it to the "natural"
+            0-based one.
+        """
+        if index < 0:
+            return len(self.data) + index
+        return index
 
     def __str__(self):
         return str(self.data)
     def __unicode__(self):
         return unicode(self.data)
 
-if "__main__" == __name__:
-    test1()
-    test2()

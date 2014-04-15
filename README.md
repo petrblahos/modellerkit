@@ -5,5 +5,5 @@ An attempt to make a toolset for interaction between a model and view the python
 
 step01
 ======
-The most basic list model, demonstrated on a wxPython's ListView.
+The most basic list model, demonstrated on a wxPython's ListView and a tk's Treeview.
 
