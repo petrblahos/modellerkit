@@ -16,6 +16,11 @@ ProductOperation = namedtuple("ProductOperation", [
 ])
 
 class Server(object):
+    """
+        A mock server. Can answer questions about a process for an
+        (article, serial_number) and about operations done on the
+        same.
+    """
     ACTS = [
         "Laser",
         "Automatic SMT placement", "Manual SMT placement",
@@ -70,8 +75,16 @@ class Server(object):
 
 class ProductModel(hotmodel.HotObject):
     """
+        Holds information about a product (article/serial number). When told
+        a new (article, serial_number), fetches the information about it's
+        process and performed operations from the server. Manages the selected
+        operation in the list of performed operations and the selected
+        operation in the process.
     """
     def __init__(self, server):
+        """
+            Set-up the read-only properties.
+        """
         super(ProductModel, self).__init__()
         self.server = server
         self.make_hot_property("article", str, True, None)
@@ -90,6 +103,9 @@ class ProductModel(hotmodel.HotObject):
         self.make_hot_property("operation_selection", int ,True, None)
 
     def set_product(self, article, sn):
+        """
+            Set the current product.
+        """
         self.article = article
         self.sn = sn
         self.process[:] = self.server.get_process(article, sn)
@@ -98,12 +114,18 @@ class ProductModel(hotmodel.HotObject):
         self.operation_selection = None
 
     def select_operation(self, index):
+        """
+            Set the selected operation in the list of performed operations.
+        """
         if index == self.operation_selection:
             return
         self.operation_selection = index
         self._fire("select", index)
 
     def select_process_operation(self, index):
+        """
+            Set the selected operation in the process.
+        """
         if index == self.process_selection:
             return
         self.process_selection = index
