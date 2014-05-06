@@ -99,9 +99,11 @@ class HotObject(HotBase):
             If setting one of the hot properties, check the type. Otherwise
             just assign the value.
         """
-        if not name.startswith("_") and name in self._hot_constants:
+        if name.startswith("_"):
+            return super(HotObject, self).__setattr__(name, val)
+        if name in self._hot_constants:
             raise AttributeError("Cannot assign to %s" % name)
-        if name.startswith("_") or not name in self._hot_properties:
+        if not name in self._hot_properties:
             return super(HotObject, self).__setattr__(name, val)
 
         # first, check if the value has changed
