@@ -51,40 +51,38 @@ class HotObject(HotBase):
     def __init__(self):
         super(HotObject, self).__init__()
         self._hot_properties = {}
-        self._hot_constants = {}
-
-    def make_hot_constant(self, name, type_info, initial_value):
-        """
-        """
-        assert not name in self._hot_properties
-        assert not name in self._hot_constants
-        # FIXME: check that we only have the allowed types here
-        self._hot_constants[name] = type_info
-        if not isinstance(initial_value, type_info):
-            raise TypeError(
-                "Only %s allowed for %s" % (type_info.__name__, name),
-            )
-        super(HotObject, self).__setattr__(name, initial_value)
-        return initial_value
 
     def make_hot_property(self, name, type_info, allow_none, initial_value):
         """
             make_hot_property registers the name to be a "hot" property.
-
+            If the type is immutable, the this will be a property to which
+            things can be assigned. If the type is a HotObject, the property
+            itself will be readonly, but it's contents will be modifiable.
+            Other values are not allowed.
         Params:
             name            The name of the property to be created.
             type_info       The allowed type for the property.
-            initial_value   This value is assigned to the property.
+            allow_none      If type_info is HotObject, None may not be allowed.
+            initial_value   This value is assigned to the property. Must be
+                            None if type_info is a HotObject
         Returns:
             The value of the newly made property.
         """
         assert not name in self._hot_properties
-        assert not name in self._hot_constants
-        # FIXME: check that the allowed type is "unmutable or hot"
+        if type_info in IMMUTABLE_TYPES \
+           or issubclass(type_info, HotBase):
+            pass
+        else:
+            raise TypeError(
+                "Type not allowed as a hot property: %s" % type_info,
+            )
+
         self._hot_properties[name] = (type_info, allow_none, )
-        # FIXME: maybe assert would be enough here
-        if not allow_none and initial_value is None:
-            raise ValueError("None not allowed for %s" % name)
+        if issubclass(type_info, HotBase):
+            assert not allow_none
+        else:
+            if not allow_none and initial_value is None:
+                raise ValueError("None not allowed for %s" % name)
         if not initial_value is None and not isinstance(
             initial_value, type_info,
         ):
@@ -101,25 +99,32 @@ class HotObject(HotBase):
         """
         if name.startswith("_"):
             return super(HotObject, self).__setattr__(name, val)
-        if name in self._hot_constants:
-            raise AttributeError("Cannot assign to %s" % name)
-        if not name in self._hot_properties:
-            return super(HotObject, self).__setattr__(name, val)
 
-        # first, check if the value has changed
-        if getattr(self, name) == val:
-            return
-        (type_info, allow_none) = self._hot_properties[name]
-        if val is None and not allow_none:
-            raise ValueError("None not allowed for %s" % name)
-        if not val is None and not isinstance(val, type_info):
-            raise TypeError(
-                "Only %s allowed for %s" % (type_info.__name__, name),
-            )
+        if name in self._hot_properties:
+            (type_info, allow_none) = self._hot_properties[name]
+            if issubclass(type_info, HotObject):
+                # do not allow assigning
+                # FIXME: if the HotObject implements a "copy constructor like"
+                # function, then we can easily emulate the assigning here
+                raise AttributeError("Cannot assign to %s" % name)
 
-        ret = super(HotObject, self).__setattr__(name, val)
-        self._fire("update", name)
-        return ret
+            # check if the value has changed
+            if getattr(self, name) == val:
+                return
+
+            if val is None and not allow_none:
+                raise ValueError("None not allowed for %s" % name)
+            if not val is None and not isinstance(val, type_info):
+                raise TypeError(
+                    "Only %s allowed for %s" % (type_info.__name__, name),
+                )
+
+            ret = super(HotObject, self).__setattr__(name, val)
+            self._fire("update", name)
+            return ret
+        # normal (not hot) properties
+        return super(HotObject, self).__setattr__(name, val)
+
 
 class HotList(HotBase):
     """

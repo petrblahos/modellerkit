@@ -89,14 +89,16 @@ class ProductModel(hotmodel.HotObject):
         self.server = server
         self.make_hot_property("article", str, True, None)
         self.make_hot_property("sn", int ,True, None)
-        self.make_hot_constant(
+        self.make_hot_property(
             "process",
             hotmodel.TypedHotList,
+            False,
             hotmodel.TypedHotList(ProcessOperation),
         )
-        self.make_hot_constant(
+        self.make_hot_property(
             "operations",
             hotmodel.TypedHotList,
+            False,
             hotmodel.TypedHotList(ProductOperation),
         )
         self.make_hot_property("process_selection", int ,True, None)
