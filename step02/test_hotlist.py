@@ -141,3 +141,12 @@ def test_check_type_1():
     with pytest.raises(TypeError):
         hl._validate_value(hotlist.HotList())
 
+def test_select_1():
+    hl = hotlist.HotList(init_iterable=[1,2,3,4,5])
+    l = []
+    hl.add_listener(get_gather_func(l))
+    hl.select(0)
+    assert l == [((hl, "select", 0), {})]
+    del l[:]
+    hl.select(4)
+    assert l == [((hl, "select", 4), {})]

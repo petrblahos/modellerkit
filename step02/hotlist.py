@@ -114,4 +114,3 @@ class HotList(HotBase):
         return str(self.data)
     def __unicode__(self):
         return unicode(self.data)
-
