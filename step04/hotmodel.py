@@ -13,11 +13,17 @@ ch.setFormatter(formatter)
 LOGGER.addHandler(ch)
 
 
-IMMUTABLE_TYPES = (
+IMMUTABLE_TYPES = set([
     int, long, float, str, unicode,
     datetime.datetime, datetime.date, datetime.time, datetime.timedelta,
-)
+])
 
+def add_immutable_type(tp):
+    """
+        Immutable types can be added to the set of immutable types, which
+        are allowed for hot properties.
+    """
+    IMMUTABLE_TYPES.add(tp)
 
 class HotBase(object):
     def __init__(self):
@@ -69,8 +75,7 @@ class HotObject(HotBase):
             The value of the newly made property.
         """
         assert not name in self._hot_properties
-        if type_info in IMMUTABLE_TYPES \
-           or issubclass(type_info, HotBase):
+        if type_info in IMMUTABLE_TYPES or issubclass(type_info, HotBase):
             pass
         else:
             raise TypeError(
@@ -254,4 +259,3 @@ class TypedHotList(HotList):
         raise TypeError(
             "Only number/strings and tuples/frozensets allowed here.",
         )
-
