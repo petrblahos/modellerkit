@@ -20,4 +20,9 @@ step04
 A new approach: HotObject checks the type for it's properties. Can hold
 primitive types or hot values.
 
+step05
+======
+Adding hierarchy to the hot objects and "event sources" to the events.
+Implemented a simple mapper to route events.
+
 
