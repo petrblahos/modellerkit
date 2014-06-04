@@ -25,4 +25,6 @@ step05
 Adding hierarchy to the hot objects and "event sources" to the events.
 Implemented a simple mapper to route events.
 
-
+step06
+======
+A full wxPython example based on step05's production.
