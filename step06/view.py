@@ -89,10 +89,12 @@ class ProductionView(wx.Frame):
         self.box.Add(self.ops_count, (2, 1), flag=wx.EXPAND)
 
         next = wx.Button(self, -1, "Next Record")
-        self.box.Add(next, (3, 0))
-
         add_op = wx.Button(self, -1, "Add Operation")
-        self.box.Add(add_op, (4, 0))
+        del_selected_op = wx.Button(self, -1, "Delete Operation")
+
+        self.box.Add(next, (3, 0))
+        self.box.Add(add_op, (3, 1))
+        self.box.Add(del_selected_op, (4, 1))
 
         self.box.AddGrowableRow(1)
         self.box.AddGrowableCol(0)
@@ -101,6 +103,7 @@ class ProductionView(wx.Frame):
 
         self.Bind(wx.EVT_BUTTON, self.on_next, next)
         self.Bind(wx.EVT_BUTTON, self.on_add_op, add_op)
+        self.Bind(wx.EVT_BUTTON, self.on_del_op, del_selected_op)
 
         self.model = model
         self.mapper = hotmodel.Mapper()
@@ -134,6 +137,12 @@ class ProductionView(wx.Frame):
             tm=datetime.datetime.now(),
             workplace=100,
         ))
+
+    def on_del_op(self, evt):
+        evt.Skip()
+        sel = self.ops_view.GetFirstSelected()
+        if -1 != sel:
+            del self.model.operations[sel]
 
 
 if "__main__" == __name__:
