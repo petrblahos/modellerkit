@@ -1,7 +1,9 @@
 """
     A micro wx App with a list of the things checked on the checklist.
 """
+import datetime
 import logging
+import random
 
 import wx
 
@@ -87,8 +89,10 @@ class ProductionView(wx.Frame):
         self.box.Add(self.ops_count, (2, 1), flag=wx.EXPAND)
 
         next = wx.Button(self, -1, "Next Record")
-
         self.box.Add(next, (3, 0))
+
+        add_op = wx.Button(self, -1, "Add Operation")
+        self.box.Add(add_op, (4, 0))
 
         self.box.AddGrowableRow(1)
         self.box.AddGrowableCol(0)
@@ -96,6 +100,7 @@ class ProductionView(wx.Frame):
         self.SetSizerAndFit(self.box)
 
         self.Bind(wx.EVT_BUTTON, self.on_next, next)
+        self.Bind(wx.EVT_BUTTON, self.on_add_op, add_op)
 
         self.model = model
         self.mapper = hotmodel.Mapper()
@@ -121,9 +126,15 @@ class ProductionView(wx.Frame):
         self.model.set_product("AAAQA%s" % self.article_counter, 1)
         self.article_counter += 1
 
+    def on_add_op(self, evt):
+        evt.Skip()
+        proc_op = random.choice(self.model.process)
+        self.model.operations.append(production.ProductOperation(
+            operation=proc_op.operation,
+            tm=datetime.datetime.now(),
+            workplace=100,
+        ))
 
-def sample_handler(handler_name, model, fqname, event_name, key):
-    print handler_name, "-->", fqname, event_name, key
 
 if "__main__" == __name__:
     MODEL = production.ProductModel(production.Server())
