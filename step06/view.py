@@ -2,7 +2,6 @@
     A micro wx App with a list of the things checked on the checklist.
 """
 import datetime
-import logging
 import random
 
 import wx
@@ -11,7 +10,23 @@ import hotmodel
 import production
 
 class MVCList(wx.ListView):
+    """
+        A list that takes a list of column names as a parameter. The value
+        updates are not set directly, instead the view responds to event
+        fired by a HotList object (probably TypedHotList with tuples as the
+        items).
+    """
     def __init__(self, parent, id, style, columns,):
+        """
+            Set up the list in a single selection mode with a list of
+            columns.
+        Params:
+            parent  The parent window
+            id      The window id
+            style   LC_SINGLE_SEL is added to the style. As this is a "report"
+                    style view, you should probably specify at least LC_REPORT
+            columns A list of column names.
+        """
         super(MVCList, self).__init__(
             parent,
             id,
@@ -22,30 +37,14 @@ class MVCList(wx.ListView):
         for (idx, column_info) in enumerate(columns):
             self.InsertColumn(idx, column_info[1])
             self.column_mapping[column_info[0]] = idx
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_selection_changed)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_selection_changed)
 
-    def on_selection_changed(self, evt):
-        evt.Skip()
-
-    def handle_reset(self, model, fqname, event_name, key):
+    def handle_reset(self, model, fqname, dummy_event_name, key):
         """
             Rebuild the list's contents.
         """
         self.DeleteAllItems()
         for (i, data) in enumerate(model):
             self.add_item(i, data)
-
-    def handle_select(self, event_source, event_name, data):
-        selected = self.GetFirstSelected()
-        if data == selected:
-            return
-        if data > -1:
-            self.Select(data)
-        elif -1 == selected:
-            pass
-        else:
-            self.Select(selected, False)
 
     def add_item(self, index, data):
         """
@@ -109,27 +108,47 @@ class ProductionView(wx.Frame):
         self.mapper = hotmodel.Mapper()
         self.mapper.add_route("/process", "", self.proc_view.handle_reset,)
         self.mapper.add_route("/operations", "", self.ops_view.handle_reset,)
-        self.mapper.add_route("/process", "", self.update_proc_count,)
-        self.mapper.add_route("/operations", "", self.update_ops_count,)
+
+        self.mapper.add_route(
+            "/process",
+            "",
+            lambda m, fqn, event, key: self.update_count(m, self.proc_count),
+        )
+        self.mapper.add_route(
+            "/operations",
+            "",
+            lambda m, fqn, event, key: self.update_count(m, self.ops_count),
+        )
+
         self.mapper.add_route("/", "", self.on_product,)
         self.model.add_listener(self.mapper)
 
-        self.article_counter = 0
+        wx.CallAfter(lambda: self.model.set_product("FIRST8", 1))
 
-    def update_proc_count(self, model, fqname, event_name, key):
-        self.proc_count.SetLabel(str(len(model)))
-    def update_ops_count(self, model, fqname, event_name, key):
-        self.ops_count.SetLabel(str(len(model)))
+    def update_count(self, model, view):
+        """
+            Set the view's label to number of items in model. Typically used
+            to indicate a number of items in a list_view.
+        """
+        view.SetLabel(str(len(model)))
 
     def on_product(self, model, fqname, event_name, key):
+        """
+            An article or sn change handler.
+        """
         self.product.SetLabel("%s %s" % (model.article, model.sn))
 
     def on_next(self, evt):
+        """
+            Display the next product.
+        """
         evt.Skip()
-        self.model.set_product("AAAQA%s" % self.article_counter, 1)
-        self.article_counter += 1
+        self.model.set_product("AAAQA%s" % random.randint(0, 9), 1)
 
     def on_add_op(self, evt):
+        """
+            Add a random operation to the operation list.
+        """
         evt.Skip()
         proc_op = random.choice(self.model.process)
         self.model.operations.append(production.ProductOperation(
@@ -139,6 +158,9 @@ class ProductionView(wx.Frame):
         ))
 
     def on_del_op(self, evt):
+        """
+            Delete selected operation.
+        """
         evt.Skip()
         sel = self.ops_view.GetFirstSelected()
         if -1 != sel:
@@ -148,7 +170,7 @@ class ProductionView(wx.Frame):
 if "__main__" == __name__:
     MODEL = production.ProductModel(production.Server())
     APP = wx.App(redirect=False)
-    FRAME = ProductionView(None, APP, "Micro wxPython Frame", MODEL)
+    FRAME = ProductionView(None, APP, "Sample Frame", MODEL)
     APP.SetTopWindow(FRAME)
     FRAME.Show(True)
     APP.MainLoop()
