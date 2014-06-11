@@ -81,6 +81,7 @@ class ProductionView(wx.Frame):
         )
         self.proc_count = wx.StaticText(self, -1, "")
         self.ops_count = wx.StaticText(self, -1, "")
+
         self.box.Add(self.product, (0, 0), (1, 2), flag=wx.EXPAND)
         self.box.Add(self.proc_view, (1, 0), flag=wx.EXPAND)
         self.box.Add(self.ops_view, (1, 1), flag=wx.EXPAND)
