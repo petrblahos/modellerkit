@@ -141,14 +141,15 @@ class ProductionView(wx.Frame):
 
     def on_next(self, evt):
         """
-            Display the next product.
+            Button "Next" handler: Display the next product.
         """
         evt.Skip()
         self.model.set_product("AAAQA%s" % random.randint(0, 9), 1)
 
     def on_add_op(self, evt):
         """
-            Add a random operation to the operation list.
+            Button "add op" handler: Add a random operation to the operation
+            list.
         """
         evt.Skip()
         proc_op = random.choice(self.model.process)
@@ -160,7 +161,7 @@ class ProductionView(wx.Frame):
 
     def on_del_op(self, evt):
         """
-            Delete selected operation.
+            Button "delete" handler: Delete selected operation.
         """
         evt.Skip()
         sel = self.ops_view.GetFirstSelected()
@@ -174,6 +175,7 @@ if "__main__" == __name__:
     FRAME = ProductionView(None, APP, "Sample Frame", MODEL)
     APP.SetTopWindow(FRAME)
     FRAME.Show(True)
+    FRAME.Maximize(True)
     APP.MainLoop()
 
 
