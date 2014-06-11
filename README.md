@@ -28,3 +28,8 @@ Implemented a simple mapper to route events.
 step06
 ------
 A full wxPython example based on step05's production.
+
+sidestep01
+----------
+An example, similar to step06/view01.py, implemented using setters and getters
+(and other special methods) on a wx.Frame.
