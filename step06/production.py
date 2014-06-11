@@ -28,9 +28,10 @@ class Server(object):
         "THT placement", "Optical inspection",
         "Selective soldering", "Wave", "Manual soldering",
     ]
-    def __init__(self):
+    def __init__(self, op_done_rate=90):
+        self.op_done_rate = op_done_rate
         pass
-    def get_product_ops(self, article, serial_num):
+    def get_product_ops(self, article, serial_num,):
         """
             Returns a list of operations done from the product process.
             Randomly skips some operations, and add random dates and
@@ -43,7 +44,7 @@ class Server(object):
         )
         proc = self.get_process(article, serial_num)
         for operation in proc:
-            if random.randint(0, 100) > 90:
+            if random.randint(0, 100) > self.op_done_rate:
                 continue
             ret.append(ProductOperation(
                 operation.operation,
