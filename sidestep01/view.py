@@ -9,6 +9,15 @@ import wx
 import production
 
 class MVCList(wx.ListView):
+    """
+        A list (wx.ListView subclass) that mimics python list behaviour, i.e.
+        implementes assignment and retrieval of items using a[x], and methods
+        insert, append, and len.
+
+        FIXME: this has not been written with much care, I would not be
+        surprised if there are memory leaks.
+        FIXME: Does not support slice operations.
+    """
     def __init__(self, parent, id, style, columns,):
         super(MVCList, self).__init__(
             parent,
@@ -29,6 +38,7 @@ class MVCList(wx.ListView):
         del self.client_objects[self.GetItemData(key)]
         self.DeleteItem(key)
     def __setitem__(self, key, value):
+        del self.client_objects[self.GetItemData(key)]
         self.client_objects[id(value)] = value
         self.SetItemData(key, id(value))
         self.set_item(key, value)
@@ -42,8 +52,15 @@ class MVCList(wx.ListView):
     def set_item(self, key, value):
         for (i, val) in enumerate(value):
             self.SetStringItem(key, i, str(val))
+    def DeleteAllItems(self):
+        super(MVCList, self).DeleteAllItems()
+        self.client_objects.clear()
 
 class ProductionView(wx.Frame):
+    """
+        A window with 2 list (a process list and a operations list), a counter
+        under each list, and some buttons.
+    """
     def __init__(self, parent, dummy_app, title, server):
         """ Create the main frame. """
         wx.Frame.__init__(
@@ -184,5 +201,6 @@ if "__main__" == __name__:
     APP = wx.App(redirect=False)
     FRAME = ProductionView(None, APP, "Sample Frame", production.Server())
     APP.SetTopWindow(FRAME)
+    FRAME.Maximize(True)
     FRAME.Show(True)
     APP.MainLoop()
