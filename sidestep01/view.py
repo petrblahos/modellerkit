@@ -33,6 +33,8 @@ class MVCList(wx.ListView):
     def __len__(self):
         return self.GetItemCount()
     def __getitem__(self, key):
+        if key >= self.GetItemCount() or key < 0:
+            raise IndexError("Out of range")
         return self.client_objects[self.GetItemData(key)]
     def __delitem__(self, key):
         del self.client_objects[self.GetItemData(key)]
