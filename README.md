@@ -33,3 +33,8 @@ sidestep01
 ----------
 An example, similar to step06/view01.py, implemented using setters and getters
 (and other special methods) on a wx.Frame.
+
+step07
+------
+A different approach when we actually declare the model class members by using
+descriptor classes.
