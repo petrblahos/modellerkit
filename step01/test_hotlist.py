@@ -141,3 +141,5 @@ def test_check_type_1():
     with pytest.raises(TypeError):
         hl._validate_value(hotlist.HotList())
 
+if "__main__" == __name__:
+    pytest.main()
