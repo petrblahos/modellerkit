@@ -36,5 +36,5 @@ An example, similar to step06/view01.py, implemented using setters and getters
 
 step07
 ------
-A different approach when we actually declare the model class members by using
-descriptor classes.
+A different approach when the model class members are declared by decriptor
+classes.
