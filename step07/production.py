@@ -17,22 +17,22 @@ ProductOperation = namedtuple("ProductOperation", [
     "workplace",
 ])
 
-class HotProcessList(hotmodel.TypedHotList):
+class ProcessList(hotmodel.TypedHotList):
     """
         A hot list that can have only ProcessOperation assigned as members
     """
     def __init__(self, init_iterable=None, name=None, container=None):
-        super(HotProcessList, self).__init__(
+        super(ProcessList, self).__init__(
             ProcessOperation, init_iterable,
             name, container,
         )
 
-class HotOperationsList(hotmodel.TypedHotList):
+class OperationsList(hotmodel.TypedHotList):
     """
         A hot list that can have only ProductOperation assigned as members
     """
     def __init__(self, init_iterable=None, name=None, container=None):
-        super(HotOperationsList, self).__init__(
+        super(OperationsList, self).__init__(
             ProductOperation, init_iterable,
             name, container,
         )
@@ -108,8 +108,8 @@ class ProductModel(hotmodel.HotContainer):
     """
     article = hotmodel.HotProperty()
     sn = hotmodel.HotProperty()
-    operations = hotmodel.HotTypedProperty(HotOperationsList)
-    process = hotmodel.HotTypedProperty(HotProcessList)
+    operations = hotmodel.HotTypedProperty(OperationsList)
+    process = hotmodel.HotTypedProperty(ProcessList)
     operation_selection = hotmodel.HotProperty()
     process_selection = hotmodel.HotProperty()
 
