@@ -79,6 +79,10 @@ class HotContainer(object):
 
 
 class HotContainee(object):
+    """
+        A base class for the data structures assignable to HotProperty.
+        A Containee knows its container and uses it to fire events.
+    """
     def __init__(self, name=None, container=None):
         self.set_rel(name, container)
 
@@ -160,9 +164,12 @@ class HotTypedProperty(HotProperty):
         assert issubclass(target_type, HotContainee)
         self.target_type = target_type
         super(HotTypedProperty, self).__init__(**kw)
+
     def __set__(self, obj, val):
-        if not obj:
-            raise Exception("Can only set on instance.")
+        """
+            Checks that the object being assigned is an instance of the right
+            type.
+        """
         name = self._get_name_within_parent(obj)
         if not isinstance(val, self.target_type):
             val = self.target_type(val, name=name, container=obj)
@@ -233,9 +240,6 @@ class HotList(HotContainee):
             for i in val:
                 self._validate_value(i)
             return val
-        if isinstance(val, HotContainee):
-            val.set_rel("%s/[]" % self._name, self._container)
-            return val
         raise TypeError(
             "Only number/strings and tuples/frozensets allowed here.",
         )
@@ -304,6 +308,76 @@ class TypedHotList(HotList):
         raise TypeError(
             "Only number/strings and tuples/frozensets allowed here.",
         )
+
+class HotDict(HotContainee):
+    """
+        A dict that fires when changed.
+    """
+    def __init__(self, init_iterable=None, name=None, container=None, ):
+        super(HotDict, self).__init__(name=name, container=container)
+        if init_iterable is None:
+            init_iterable = []
+        self.data = {}
+        if init_iterable:
+            self.data = dict([
+                (k,self._validate_value(v))
+                for (k , v) in init_iterable
+            ])
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return self.data.__iter__()
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __delitem__(self, key):
+        del self.data[key]
+        self._fire("delete", key)
+
+    def items(self):
+        return self.data.items()
+    def keys(self):
+        return self.data.keys()
+    def values(self):
+        return self.data.values()
+
+    def __setitem__(self, key, value):
+        event = "update" if key in self.data else "insert"
+        self.data[key] = self._validate_value(value)
+        self._fire(event, key)
+
+    def clear(self):
+        self.data.clear()
+        self._fire("reset", "")
+
+    def update(self, other):
+        for (k, v) in other.items():
+            self[k] = v
+
+    def _validate_value(self, val):
+        """
+            The members may only be "primitive" types (int, str and such),
+            or tuples of primitive types.
+        """
+        if type(val) in IMMUTABLE_TYPES:
+            return val
+        if isinstance(val, tuple) or isinstance(val, frozenset):
+            for i in val:
+                self._validate_value(i)
+            return val
+        raise TypeError(
+            "Only number/strings and tuples/frozensets allowed here.",
+        )
+
+    def __str__(self):
+        return str(self.data)
+    def __unicode__(self):
+        return unicode(self.data)
+
+
 
 class Mapper(object):
     """
