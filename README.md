@@ -38,3 +38,7 @@ step07
 ------
 A different approach when the model class members are declared by decriptor
 classes.
+
+examples
+--------
+A few examples.
