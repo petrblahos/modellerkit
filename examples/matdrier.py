@@ -7,29 +7,22 @@ drying.
 """
 from collections import namedtuple
 import datetime
-import time
 
 import wx
-try:
-    import wx.gizmos
 
-    LedCtrl = wx.gizmos.LEDNumberCtrl
-except:
-    LedCtrl = lambda x, y: wx.TextCtrl(x, y, style=wx.TE_READONLY)
-
-import hotmodel, hotwidgets
+import hotmodel
+import hotwidgets
 
 
 class Material(namedtuple(
     "_Material",
     [
         "name",
-        "status",   # "DRYING", "DRIED", "IDLE"
-        "req_temp", # degrees centigrate
-        "req_time", # seconds
-        "start_tm", # datetime if currently "DRYING" or undefined
-    ],
-    ),
+        "status",    # "DRYING", "DRIED", "IDLE"
+        "req_temp",  # degrees centigrate
+        "req_time",  # seconds
+        "start_tm",  # datetime if currently "DRYING" or undefined
+    ],),
 ):
     """
         A material status. Can be IDLE, DRYING, DRIED. Keeps track
@@ -83,6 +76,7 @@ class MaterialList(hotmodel.TypedHotList):
         super(MaterialList, self).__init__(
             Material, init_iterable, name, container,
         )
+
 
 class Model(hotmodel.HotContainer):
     """
@@ -159,6 +153,7 @@ class MaterialView(hotwidgets.MVCList):
         self.SetStringItem(index, 4, dry_at)
         self.SetItemBackgroundColour(index, wx.TheColourDatabase.Find(color))
 
+
 class MatDrierView(wx.Dialog):
     """
         The viewer for the whole Material Drying model.
@@ -175,7 +170,7 @@ class MatDrierView(wx.Dialog):
 
         self.mat_view = MaterialView(self)
         self.mat_view.SetMinSize((500, 300))
-        self.temperature = LedCtrl(self, -1)
+        self.temperature = wx.StaticText(self, -1)
 
         # material input
         self.mat_name = wx.TextCtrl(self, -1, "")
@@ -228,7 +223,6 @@ class MatDrierView(wx.Dialog):
         self.timer.Start(1000)
         self.Bind(wx.EVT_TIMER, self.on_timer)
 
-
     def on_timer(self, evt):
         evt.Skip()
         goal = int(self.temp_goal.GetValue())
@@ -247,14 +241,14 @@ class MatDrierView(wx.Dialog):
         temp = int(self.req_temp.GetValue())
         if mat:
             self.model.add_material(Material(
-                    mat, "IDLE", temp, tm, None
+                mat, "IDLE", temp, tm, None
             ))
 
     def on_temperature(self, model, fqname, event_name, key):
         """
             The temperature has changed in the model.
         """
-        self.temperature.SetValue(str(model))
+        self.temperature.SetLabel("Current temperature: %s" % model)
 
 
 if "__main__" == __name__:
